@@ -61,8 +61,14 @@ public class Utils {
             final String accountName,
             final String hostedDomain
     ) {
-        GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestScopes(new Scope(Scopes.EMAIL), scopes);
+        GoogleSignInOptions.Builder googleSignInOptionsBuilder = new GoogleSignInOptions.Builder();
+
+        if (scopes.length > 0) {
+            final Scope firstScope = scopes[0];
+            final Scope[] remainingScopes = remainingScopesArray(scopes);
+            googleSignInOptionsBuilder.requestScopes(firstScope, remainingScopes); // this api forces us to split-up scopes :(
+        }
+
         if (webClientId != null && !webClientId.isEmpty()) {
             googleSignInOptionsBuilder.requestIdToken(webClientId);
             if (offlineAccess) {
@@ -86,6 +92,20 @@ public class Utils {
         for (int i = 0; i < size; i++) {
             String scopeName = scopes.getString(i);
             _scopes[i] = new Scope(scopeName);
+        }
+        return _scopes;
+    }
+
+    @NonNull
+    static Scope[] remainingScopesArray(Scope[] scopes) {
+        int size = scopes.length;
+        if (size == 0) {
+            return new Scope[0];
+        }
+        Scope[] _scopes = new Scope[size - 1];
+
+        for (int i = 1; i < size; i++) {
+            _scopes[i-1] = scopes[i];
         }
         return _scopes;
     }
