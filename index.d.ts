@@ -129,8 +129,8 @@ export namespace GoogleSignin {
   function signIn(): Promise<User>;
 
   /**
-   * Prompts the user to sign in with their Google account. Resolves with the
-   * user if successful.
+   * Prompts the user to pick a Google account. Resolves with the
+   * email address if successful.
    */
   function pickEmail(): Promise<String>;
 
