@@ -1,6 +1,7 @@
 package co.apptailor.googlesignin;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -26,6 +27,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes;
+import com.google.android.gms.common.AccountPicker;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.SignInButton;
@@ -36,6 +38,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +54,7 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
     private GoogleSignInClient _apiClient;
 
     public static final int RC_SIGN_IN = 9001;
+    public static final int RC_PICK_EMAIL = 9002;
     public static final int REQUEST_CODE_RECOVER_AUTH = 53294;
     public static final String MODULE_NAME = "RNGoogleSignin";
     public static final String PLAY_SERVICES_NOT_AVAILABLE = "PLAY_SERVICES_NOT_AVAILABLE";
@@ -200,6 +204,24 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod void pickEmail(Promise promise) {
+        final Activity activity = getCurrentActivity();
+        if (activity == null) {
+            promise.reject(MODULE_NAME, "activity is null");
+            return;
+        }
+
+        if (promiseWrapper.setPromiseWithInProgressCheck(promise, "pickEmail")) {
+            UiThreadUtil.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
+                    activity.startActivityForResult(intent, RC_PICK_EMAIL);
+                }
+            });
+        }
+    }
+
     private class RNGoogleSigninActivityEventListener extends BaseActivityEventListener {
         @Override
         public void onActivityResult(Activity activity, final int requestCode, final int resultCode, final Intent intent) {
@@ -213,7 +235,15 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
                 } else {
                     promiseWrapper.reject(MODULE_NAME, "Failed authentication recovery attempt, probably user-rejected.");
                 }
+            } else if (requestCode == RC_PICK_EMAIL) {
+                if (resultCode == Activity.RESULT_OK) {
+                    String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                    promiseWrapper.resolve(accountName);
+                } else {
+                    promiseWrapper.reject(MODULE_NAME, "Failed pick email, probably user-rejected.");
+                }
             }
+
         }
     }
 

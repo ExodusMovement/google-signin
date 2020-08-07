@@ -20,6 +20,10 @@ class GoogleSignin {
     return await RNGoogleSignin.signIn();
   }
 
+  async pickEmail() {
+    return await RNGoogleSignin.pickEmail();
+  }
+
   async hasPlayServices(options = { showPlayServicesUpdateDialog: true }) {
     if (IS_IOS) {
       return true;
