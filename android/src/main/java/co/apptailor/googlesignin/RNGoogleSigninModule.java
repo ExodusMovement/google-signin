@@ -61,6 +61,8 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
     public static final String ERROR_USER_RECOVERABLE_AUTH = "ERROR_USER_RECOVERABLE_AUTH";
     private static final String SHOULD_RECOVER = "SHOULD_RECOVER";
 
+    private String accountName;
+
     private PendingAuthRecovery pendingAuthRecovery;
 
     private PromiseWrapper promiseWrapper;
@@ -131,6 +133,7 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
         final boolean forceConsentPrompt = config.hasKey("forceConsentPrompt") && config.getBoolean("forceConsentPrompt");
         final String accountName = config.hasKey("accountName") ? config.getString("accountName") : null;
         final String hostedDomain = config.hasKey("hostedDomain") ? config.getString("hostedDomain") : null;
+        this.accountName = accountName;
 
         GoogleSignInOptions options = getSignInOptions(createScopesArray(scopes), webClientId, offlineAccess, forceConsentPrompt, accountName, hostedDomain);
         _apiClient = GoogleSignIn.getClient(getReactApplicationContext(), options);
@@ -170,7 +173,7 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
             if (account == null) {
                 promiseWrapper.reject(MODULE_NAME, "GoogleSignInAccount instance was null");
             } else {
-                WritableMap userParams = getUserProperties(account);
+                WritableMap userParams = getUserProperties(account, accountName);
                 promiseWrapper.resolve(userParams);
             }
         } catch (ApiException e) {
@@ -308,7 +311,7 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getCurrentUser(Promise promise) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getReactApplicationContext());
-        promise.resolve(account == null ? null : getUserProperties(account));
+        promise.resolve(account == null ? null : getUserProperties(account, accountName));
     }
 
     @ReactMethod
@@ -332,7 +335,7 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
     }
 
     private void startTokenRetrievalTaskWithRecovery(GoogleSignInAccount account) {
-        WritableMap userParams = getUserProperties(account);
+        WritableMap userParams = getUserProperties(account, accountName);
         WritableMap recoveryParams = Arguments.createMap();
         recoveryParams.putBoolean(SHOULD_RECOVER, true);
         new AccessTokenRetrievalTask(this).execute(userParams, recoveryParams);

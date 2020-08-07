@@ -26,7 +26,7 @@ public class Utils {
     }
 
 
-    static WritableMap getUserProperties(@NonNull GoogleSignInAccount acct) {
+    static WritableMap getUserProperties(@NonNull GoogleSignInAccount acct, String accountName) {
         Uri photoUrl = acct.getPhotoUrl();
 
         WritableMap user = Arguments.createMap();
@@ -34,7 +34,7 @@ public class Utils {
         user.putString("name", acct.getDisplayName());
         user.putString("givenName", acct.getGivenName());
         user.putString("familyName", acct.getFamilyName());
-        user.putString("email", acct.getEmail());
+        user.putString("email", accountName != null ? accountName : acct.getEmail());
         user.putString("photo", photoUrl != null ? photoUrl.toString() : null);
 
         WritableMap params = Arguments.createMap();
