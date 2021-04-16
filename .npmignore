@@ -1,5 +1,9 @@
 img
 example
+.circleci/
+*.d.ts
+*.js.flow
+*.md
 
 # OSX
 #
@@ -36,6 +40,9 @@ local.properties
 .idea/libraries
 build
 captures
+android/gradle/
+android/gradlew
+android/gradlew.bat
 
 # node.js
 #
